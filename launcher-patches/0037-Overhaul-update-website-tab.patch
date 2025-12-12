@@ -1,0 +1,57 @@
+From 60e27ce38fbacfd1748089e2661d463db8a8da8e Mon Sep 17 00:00:00 2001
+From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
+Date: Fri, 12 Dec 2025 23:43:31 +0000
+Subject: [PATCH] Overhaul update website tab
+
+
+diff --git a/src/main/java/net/minecraft/launcher/ui/tabs/website/LegacySwingBrowser.java b/src/main/java/net/minecraft/launcher/ui/tabs/website/LegacySwingBrowser.java
+index 6d6b17c..8ccd6d3 100644
+--- a/src/main/java/net/minecraft/launcher/ui/tabs/website/LegacySwingBrowser.java
++++ b/src/main/java/net/minecraft/launcher/ui/tabs/website/LegacySwingBrowser.java
+@@ -19,6 +19,11 @@ public class LegacySwingBrowser implements Browser {
+     private final JScrollPane scrollPane = new JScrollPane();
+     private final JTextPane browser = new JTextPane();
+ 
++    private boolean isInternalNewsPage(URL url) {
++        if (url == null) return false;
++        return url.toString().startsWith("https://ragedmeteor1837.github.io/mcnews/news/");
++    }
++
+     public LegacySwingBrowser() {
+         this.browser.setEditable(false);
+         this.browser.setMargin((Insets)null);
+@@ -26,15 +31,24 @@ public class LegacySwingBrowser implements Browser {
+         this.browser.setContentType("text/html");
+         this.browser.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center><h1>Loading page..</h1></center></font></body></html>");
+         this.browser.addHyperlinkListener(new HyperlinkListener() {
+-            public void hyperlinkUpdate(HyperlinkEvent var1) {
+-                if (var1.getEventType() == EventType.ACTIVATED) {
+-                    try {
+-                        OperatingSystem.openLink(var1.getURL().toURI());
+-                    } catch (Exception var3) {
+-                        LegacySwingBrowser.LOGGER.error("Unexpected exception opening link " + var1.getURL(), var3);
++            @Override
++            public void hyperlinkUpdate(HyperlinkEvent event) {
++                if (event.getEventType() != EventType.ACTIVATED)
++                    return;
++
++                URL url = event.getURL();
++                if (url == null)
++                    return;
++
++                try {
++                    if (isInternalNewsPage(url)) {
++                        LegacySwingBrowser.this.browser.setPage(url);
++                    } else {
++                        OperatingSystem.openLink(url.toURI());
+                     }
++                } catch (Exception e) {
++                    LegacySwingBrowser.LOGGER.error("Unexpected exception handling link " + url, e);
+                 }
+-
+             }
+         });
+         this.scrollPane.setViewportView(this.browser);
+-- 
+2.43.0
+
