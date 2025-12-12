@@ -1,4 +1,4 @@
-From 1d72a6703f66206b53b9b83935330aca4efa7784 Mon Sep 17 00:00:00 2001
+From ca071320300d144b18ab7a70c5e2f708196ef622 Mon Sep 17 00:00:00 2001
 From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
 Date: Sun, 5 Oct 2025 17:29:03 +0100
 Subject: [PATCH] Fix for auth server on legacy JRE

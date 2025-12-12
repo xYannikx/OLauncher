@@ -1,9 +1,90 @@
-From 55c2d6acfe886d91660c87325bd022638a69a31d Mon Sep 17 00:00:00 2001
+From 9675f2725d15cfe7460c64963ea96a56fd528bf6 Mon Sep 17 00:00:00 2001
 From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
-Date: Sun, 28 Sep 2025 22:40:18 +0100
-Subject: [PATCH] Instance wording
+Date: Thu, 25 Sep 2025 17:55:40 +0100
+Subject: [PATCH] Updated URLs and wording
 
 
+diff --git a/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java b/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java
+index d9c609c..3242c8b 100644
+--- a/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java
++++ b/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java
+@@ -291,7 +291,7 @@ public abstract class AbstractGameRunner implements GameRunner, DownloadListener
+                         this.setStatus(GameInstanceStatus.LAUNCHING);
+                         this.launchGame();
+                     } catch (Throwable var5) {
+-                        LOGGER.fatal("Fatal error launching game. Report this to https://github.com/olauncher/olauncher/issues/new please!", var5); // olauncher - have people report bugs to us
++                        LOGGER.fatal("Fatal error launching game. Report this to https://github.com/RagedMeteor1837/olauncher/issues/new please!", var5); // olauncher - have people report bugs to us
+                     }
+                 }
+             }
+diff --git a/src/main/java/dev/figboot/olauncher/launcher/update/LauncherUpdateChecker.java b/src/main/java/dev/figboot/olauncher/launcher/update/LauncherUpdateChecker.java
+index e7febd1..7541190 100644
+--- a/src/main/java/dev/figboot/olauncher/launcher/update/LauncherUpdateChecker.java
++++ b/src/main/java/dev/figboot/olauncher/launcher/update/LauncherUpdateChecker.java
+@@ -28,7 +28,7 @@ public class LauncherUpdateChecker {
+     private static final Logger LOGGER = LogManager.getLogger();
+     private static final String INFO_FILE_NAME = "olauncher_update.json";
+ 
+-    private static final URL GITHUB_LATEST_RELEASE_URL = constantURL("https://api.github.com/repos/olauncher/olauncher/releases/latest");
++    private static final URL GITHUB_LATEST_RELEASE_URL = constantURL("https://api.github.com/repos/RagedMeteor1837/olauncher/releases/latest");
+ 
+     private static final long UPDATE_CHECK_FREQ = 3;
+     private static final TemporalUnit UPDATE_CHECK_FREQ_UNIT = ChronoUnit.HOURS;
+diff --git a/src/main/java/net/minecraft/launcher/Launcher.java b/src/main/java/net/minecraft/launcher/Launcher.java
+index f951bb2..07f8ed9 100644
+--- a/src/main/java/net/minecraft/launcher/Launcher.java
++++ b/src/main/java/net/minecraft/launcher/Launcher.java
+@@ -215,9 +215,9 @@ public class Launcher {
+ 
+                 try {
+                     Launcher.this.profileManager.loadProfiles();
+-                    Launcher.LOGGER.info("Loaded " + Launcher.this.profileManager.getProfiles().size() + " profile(s); selected '" + Launcher.this.profileManager.getSelectedProfile().getName() + "'");
++                    Launcher.LOGGER.info("Loaded " + Launcher.this.profileManager.getProfiles().size() + " instance(s); selected '" + Launcher.this.profileManager.getSelectedProfile().getName() + "'");
+                 } catch (Throwable var6) {
+-                    Launcher.LOGGER.error("Unexpected exception refreshing profile list", var6);
++                    Launcher.LOGGER.error("Unexpected exception refreshing instance list", var6);
+                 }
+ 
+                 if (Launcher.this.requestedUser != null) {
+@@ -277,7 +277,7 @@ public class Launcher {
+                     try {
+                         this.profileManager.saveProfiles();
+                     } catch (IOException var6) {
+-                        LOGGER.error("Couldn't save profiles after refreshing auth!", var6);
++                        LOGGER.error("Couldn't save instances after refreshing auth!", var6);
+                     }
+ 
+                     this.profileManager.fireRefreshEvent();
+@@ -296,7 +296,7 @@ public class Launcher {
+                 try {
+                     this.profileManager.saveProfiles();
+                 } catch (IOException var3) {
+-                    LOGGER.error("Couldn't save profiles after refreshing auth!", var3);
++                    LOGGER.error("Couldn't save instances after refreshing auth!", var3);
+                 }
+ 
+                 this.profileManager.fireRefreshEvent();
+diff --git a/src/main/java/net/minecraft/launcher/LauncherConstants.java b/src/main/java/net/minecraft/launcher/LauncherConstants.java
+index 6754e1c..4831ef0 100644
+--- a/src/main/java/net/minecraft/launcher/LauncherConstants.java
++++ b/src/main/java/net/minecraft/launcher/LauncherConstants.java
+@@ -17,13 +17,13 @@ import org.apache.commons.io.IOUtils;
+ public class LauncherConstants {
+     public static final int VERSION_FORMAT = 21;
+     public static final int PROFILES_FORMAT = 1;
+-    public static final URI URL_REGISTER = constantURI("https://account.mojang.com/register");
++    public static final URI URL_REGISTER = constantURI("https://account.microsoft.com/account/");
+     public static final String URL_JAR_FALLBACK = "https://s3.amazonaws.com/Minecraft.Download/";
+     public static final String URL_RESOURCE_BASE = "https://resources.download.minecraft.net/";
+     public static final String URL_LIBRARY_BASE = "https://libraries.minecraft.net/";
+-    public static final String URL_BLOG = System.getProperty("dev.figboot.olauncher.URLNews", "https://olauncher.github.io/news");
++    public static final String URL_BLOG = System.getProperty("dev.figboot.olauncher.URLNews", "https://ragedmeteor1837.github.io/mcnews/news/");
+     public static final String URL_SUPPORT = "http://help.mojang.com/?ref=launcher";
+-    public static final String URL_STATUS_CHECKER = "http://status.mojang.com/check";
++    public static final String URL_STATUS_CHECKER = "https://olauncherstatus.onrender.com/status";
+     public static final int UNVERSIONED_BOOTSTRAP_VERSION = 0;
+     public static final int MINIMUM_BOOTSTRAP_SUPPORTED = 4;
+     public static final int SUPER_COOL_BOOTSTRAP_VERSION = 100;
 diff --git a/src/main/java/net/minecraft/launcher/ui/bottombar/ProfileSelectionPanel.java b/src/main/java/net/minecraft/launcher/ui/bottombar/ProfileSelectionPanel.java
 index 1121e25..4e73367 100644
 --- a/src/main/java/net/minecraft/launcher/ui/bottombar/ProfileSelectionPanel.java
@@ -46,6 +127,19 @@ index 1121e25..4e73367 100644
                  }
  
                  this.minecraftLauncher.ensureLoggedIn();
+diff --git a/src/main/java/net/minecraft/launcher/ui/bottombar/StatusPanelForm.java b/src/main/java/net/minecraft/launcher/ui/bottombar/StatusPanelForm.java
+index 91240e0..9379327 100644
+--- a/src/main/java/net/minecraft/launcher/ui/bottombar/StatusPanelForm.java
++++ b/src/main/java/net/minecraft/launcher/ui/bottombar/StatusPanelForm.java
+@@ -51,7 +51,7 @@ public class StatusPanelForm extends SidebarGridForm {
+                 try {
+                     TypeToken var1 = new TypeToken<List<Map<String, StatusPanelForm.ServerStatus>>>() {
+                     };
+-                    List var2 = (List)StatusPanelForm.this.gson.fromJson(Http.performGet(new URL("http://status.mojang.com/check"), StatusPanelForm.this.minecraftLauncher.getLauncher().getProxy()), var1.getType());
++                    List var2 = (List)StatusPanelForm.this.gson.fromJson(Http.performGet(new URL("https://olauncherstatus.onrender.com/status"), StatusPanelForm.this.minecraftLauncher.getLauncher().getProxy()), var1.getType());
+                     Iterator var3 = var2.iterator();
+ 
+                     while(var3.hasNext()) {
 diff --git a/src/main/java/net/minecraft/launcher/ui/popups/profile/ProfileEditorPopup.java b/src/main/java/net/minecraft/launcher/ui/popups/profile/ProfileEditorPopup.java
 index 1f46772..1c68f9b 100644
 --- a/src/main/java/net/minecraft/launcher/ui/popups/profile/ProfileEditorPopup.java
