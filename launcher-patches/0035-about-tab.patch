@@ -1,4 +1,4 @@
-From f44f348bd8fff5c973fdf9788c00c984acd556d8 Mon Sep 17 00:00:00 2001
+From ba4e20f82d6ff1e4035823c0546c4d25463d519b Mon Sep 17 00:00:00 2001
 From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
 Date: Mon, 29 Sep 2025 23:23:11 +0100
 Subject: [PATCH] about tab
@@ -116,10 +116,10 @@ index c752284..3f14f16 100644
      private String javaPath; // olauncher - bundled java runtime UI
 diff --git a/src/main/java/net/minecraft/launcher/ui/tabs/AboutTab.java b/src/main/java/net/minecraft/launcher/ui/tabs/AboutTab.java
 new file mode 100644
-index 0000000..417f2af
+index 0000000..3f2d61f
 --- /dev/null
 +++ b/src/main/java/net/minecraft/launcher/ui/tabs/AboutTab.java
-@@ -0,0 +1,550 @@
+@@ -0,0 +1,553 @@
 +// AboutTab.java - RagedMeteor1837 - OLauncher
 +// A tab showing information about the launcher, service status, and release notes.
 +
@@ -172,7 +172,7 @@ index 0000000..417f2af
 +    private final JLabel aboutLabel = new JLabel();
 +    private final String aboutBody =
 +            "<h3 style='font-size:13px;margin:0 0 6px 0;'>About OLauncher</h3>"
-+        + "The old launcher we all know and love with the quality-of-life features of the new launcher. This aims to support Java 8 through modern Java."
++        + "The old launcher we all know and love with the quality-of-life features of the new launcher."
 +        + "<br><br>"
 +        + "This project is maintained on a best-effort basis and updates will only be made when I have the time. The fork was originally created to ensure the launcher could display new update notes and similar fixes. There are currently no planned features beyond this scope."
 +        + "<br><br>"
@@ -187,6 +187,7 @@ index 0000000..417f2af
 +        + "  </ul>"
 +        + "  <li>Update checking</li>"
 +        + "  <li>Displays Mojang Server Status</li>"
++        + "  <li>Displays latest release notes</li>"
 +        + "</ul>";
 +
 +    private final JLabel statusLabel = new JLabel("<html>Loading status…</html>");
@@ -216,6 +217,8 @@ index 0000000..417f2af
 +    private final Map<String, String> displayNames = new LinkedHashMap<>(DEFAULT_DISPLAY_NAMES);
 +    private volatile List<HostState> lastStatuses = Collections.emptyList();
 +
++    // Github constants for easier changing if the repo is moved and/or forked
++    // Need to make these global at some point
 +    private static final String GH_OWNER = "ragedmeteor1837";
 +    private static final String GH_REPO  = "olauncher";
 +
