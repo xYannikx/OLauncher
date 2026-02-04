@@ -1,0 +1,40 @@
+From 3bf5c57016b0668740829168559c4da1081e9a7b Mon Sep 17 00:00:00 2001
+From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
+Date: Wed, 4 Feb 2026 17:52:33 +0000
+Subject: [PATCH] Implement 1.7.3_04 changes
+
+
+diff --git a/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java b/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java
+index 69b9729..f6de730 100644
+--- a/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java
++++ b/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java
+@@ -31,7 +31,7 @@ public class LogInPopup extends JPanel implements ActionListener {
+     private final JButton loginButton = new JButton("Log In");
+     private final JButton registerButton = new JButton("Register");
+     private final JButton microsoftLoginButton = new JButton("Microsoft Login"); // olauncher - Add MS login button
+-    private final JButton microsoftDeviceLoginButton = new JButton("Microsoft Login (Device Code)"); // olauncher - Add MS login button
++    private final JButton microsoftDeviceLoginButton = new JButton("Microsoft Login"); // olauncher - Add MS login button
+     private final JProgressBar progressBar = new JProgressBar();
+ 
+     public LogInPopup(Launcher var1, LogInPopup.Callback var2) {
+@@ -74,7 +74,7 @@ public class LogInPopup extends JPanel implements ActionListener {
+         this.add(this.logInForm);
+         //this.add(Box.createVerticalStrut(15));
+         JPanel var6 = new JPanel();
+-        var6.setLayout(new GridLayout(2, 1, 0, 5));
++        var6.setLayout(new GridLayout(0, 1, 0, 5));
+         /*var6.setLayout(new GridLayout(1, 2, 10, 0));
+         var6.add(this.registerButton);
+         var6.add(this.loginButton);*/
+@@ -105,7 +105,7 @@ public class LogInPopup extends JPanel implements ActionListener {
+         microsoftLoginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+         microsoftDeviceLoginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+ 
+-        var6.add(microsoftLoginButton);
++        //var6.add(microsoftLoginButton);
+         var6.add(microsoftDeviceLoginButton);
+ 
+         this.add(var6);
+-- 
+2.46.2.windows.1
+
