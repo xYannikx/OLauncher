@@ -1,0 +1,318 @@
+From 53dd97cb7da12e80c8ce9dce0f89a813c6e55802 Mon Sep 17 00:00:00 2001
+From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 14:55:55 +0000
+Subject: [PATCH] Allow offline play
+
+
+diff --git a/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java b/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java
+index 3242c8b..8c6157d 100644
+--- a/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java
++++ b/src/main/java/com/mojang/launcher/game/runner/AbstractGameRunner.java
+@@ -148,7 +148,9 @@ public abstract class AbstractGameRunner implements GameRunner, DownloadListener
+         List<RuntimesManifest.Runtime> runtimes = jreManager.getRuntimes(component);
+ 
+         if (runtimes.size() == 0) {
+-            throw new RuntimeException("There are no supported java runtimes. You choose one manually.");
++            LOGGER.warn("No supported java runtimes available. This may be due to offline mode. Attempting to continue without bundled runtime.");
++            bundledRuntimeDir = null;
++            return; // Gracefully skip bundled runtime setup when unavailable
+         }
+ 
+         if (runtimes.size() > 1) {
+diff --git a/src/main/java/dev/figboot/olauncher/auth/MicrosoftUserAuthentication.java b/src/main/java/dev/figboot/olauncher/auth/MicrosoftUserAuthentication.java
+index 354a2c2..c8b0326 100644
+--- a/src/main/java/dev/figboot/olauncher/auth/MicrosoftUserAuthentication.java
++++ b/src/main/java/dev/figboot/olauncher/auth/MicrosoftUserAuthentication.java
+@@ -49,6 +49,7 @@ public class MicrosoftUserAuthentication extends HttpUserAuthentication {
+     @Getter private UUID xuid;
+     private Instant mojTokenExpire;
+     private boolean online;
++    private String cachedProfileName;
+ 
+     private MSLoginServer.Response msLoginRes;
+     private MSDeviceCodeHeartbeatResponse msDeviceLoginRes;
+@@ -120,6 +121,9 @@ public class MicrosoftUserAuthentication extends HttpUserAuthentication {
+             String hash = msAndXblColdLogIn(msAuthCode);
+             xstsAndMinecraftLogIn(hash);
+             profileLogIn();
++        } else if (xuid != null) {
++            LOGGER.info("No valid tokens, but cached profile available. Attempting offline login...");
++            offlineProfileLogIn();
+         } else {
+             throw new AuthenticationException("This account's credentials aren't saved! You must log in again.");
+         }
+@@ -127,20 +131,25 @@ public class MicrosoftUserAuthentication extends HttpUserAuthentication {
+ 
+     private boolean ownsGame() throws AuthenticationException {
+         LOGGER.debug("Checking if they own the game...");
+-        MinecraftEntitlementsResponse entitlementRes = getAuthenticationService().getAuthenticated(MicrosoftAuthenticationService.ENTITLEMENTS_URL,
+-                mojToken, MinecraftEntitlementsResponse.class);
++        try {
++            MinecraftEntitlementsResponse entitlementRes = getAuthenticationService().getAuthenticated(MicrosoftAuthenticationService.ENTITLEMENTS_URL,
++                    mojToken, MinecraftEntitlementsResponse.class);
+ 
+-        if (entitlementRes.getItems() == null) {
+-            return false;
+-        }
++            if (entitlementRes.getItems() == null) {
++                return false;
++            }
+ 
+-        for (MinecraftEntitlementsResponse.EntitlementItem item : entitlementRes.getItems()) {
+-            if (item.getName().equals("product_minecraft") || item.getName().equals("game_minecraft")) {
+-                return true;
++            for (MinecraftEntitlementsResponse.EntitlementItem item : entitlementRes.getItems()) {
++                if (item.getName().equals("product_minecraft") || item.getName().equals("game_minecraft")) {
++                    return true;
++                }
+             }
+-        }
+ 
+-        return false;
++            return false;
++        } catch (AuthenticationException ex) {
++            LOGGER.warn("Unable to check game ownership (likely offline). Assuming demo mode.", ex);
++            return false;
++        }
+     }
+ 
+     private String msAndXblColdLogIn(String msAuthCode) throws AuthenticationException {
+@@ -246,52 +255,76 @@ public class MicrosoftUserAuthentication extends HttpUserAuthentication {
+         this.xuid = xuidFromString(xstsAuthRes.getXID());
+     }
+ 
+-    private void profileLogIn() throws AuthenticationException {
+-        if (this.xuid == null) findXUID();
++    private void offlineProfileLogIn() throws AuthenticationException {
++        LOGGER.info("Using cached profile for offline play...");
++        if (this.xuid == null) {
++            throw new AuthenticationException("No cached profile available for offline play. Please log in online first.");
++        }
+ 
+-        LOGGER.debug("Getting your user profile...");
++        String profileName = StringUtils.isNotBlank(cachedProfileName) ? cachedProfileName : "Player";
++        String userId = xuid.toString().replace("-", "")
++                .replaceFirst("^0+(?!$)", "");  // Remove leading zeros
+ 
+-        boolean isDemo = !ownsGame();
++        profileInfo = new MCProfileInfo(xuid, profileName);
++        
++        GameProfile profile = new GameProfile(profileInfo.getId(), profileInfo.getName());
++        setSelectedProfile(profile);
++        profiles = new GameProfile[]{profile};
++        
++        online = false;
++        setUserid(userId);
++        setUserType(UserType.MICROSOFT);
+ 
+-        if (isDemo) {
+-            LOGGER.debug("No Minecraft entitlement! Utilizing demo profile...");
+-            profileInfo = new MCProfileInfo(xuid, "Player");
+-        } else {
+-            profileInfo = getAuthenticationService().getAuthenticated(MicrosoftAuthenticationService.ROUTE_MINECRAFT_PROFILE, mojToken, MCProfileInfo.class);
+-        }
++        LOGGER.info("Offline login successful with cached profile: {}", profileName);
++    }
+ 
+-        if (false) { // this code should be unnecessary now -figboot
+-        while (profileInfo.getId() == null) {
+-            // User profile just returns 404 (who knows why)
+-            // I believe that it may be an issue with the Mojang API
+-            // - exro
++    private void profileLogIn() throws AuthenticationException {
++        if (this.xuid == null) {
++            // Only try to find XUID if we're potentially online
+             try {
+-                SwingUtilities.invokeAndWait(GameProfileFixDialog::new);
+-            } catch (InterruptedException | InvocationTargetException e) {
+-                throw new RuntimeException(e);
++                findXUID();
++            } catch (AuthenticationException ex) {
++                LOGGER.debug("Could not find XUID (likely offline). Proceeding with cached profile if available.", ex);
++                if (StringUtils.isBlank(cachedProfileName)) {
++                    throw new AuthenticationException("No cached profile available for offline play. Please log in online first.", ex);
++                }
++                this.xuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + cachedProfileName).getBytes());
+             }
+-            profileInfo = getAuthenticationService().getAuthenticated(MicrosoftAuthenticationService.ROUTE_MINECRAFT_PROFILE,
+-                    mojToken, MCProfileInfo.class);
+-        }
+         }
+ 
+-        String userId = profileInfo.getId().toString().replace("-", "");
++        LOGGER.debug("Getting your user profile...");
++
++        boolean isDemo = !ownsGame();
+ 
+         if (isDemo) {
+-            setSelectedProfile(null);
+-            profiles = new GameProfile[0];
+-            // demo profiles use XUID, which are usually padded with lots of zeros
+-            userId = userId.replaceFirst("^0+(?!$)", "");
++            LOGGER.debug("No Minecraft entitlement! Utilizing demo profile...");
++            String profileName = StringUtils.isNotBlank(cachedProfileName) ? cachedProfileName : "Player";
++            profileInfo = new MCProfileInfo(xuid, profileName);
++            
++            GameProfile profile = new GameProfile(xuid, profileName);
++            setSelectedProfile(profile);
++            profiles = new GameProfile[]{profile};
++            
++            online = false;  // Offline mode
+         } else {
++            profileInfo = getAuthenticationService().getAuthenticated(MicrosoftAuthenticationService.ROUTE_MINECRAFT_PROFILE, mojToken, MCProfileInfo.class);
++            cachedProfileName = profileInfo.getName();
++            
+             GameProfile profile = new GameProfile(profileInfo.getId(), profileInfo.getName());
+             profile = sessionService.fillProfileProperties(profile, false);
+             setSelectedProfile(profile);
+             getModifiableUserProperties().clear();
+             getModifiableUserProperties().putAll(profile.getProperties());
+             profiles = new GameProfile[]{profile};
++            
++            online = true;  // Successfully logged in online
++        }
++
++        String userId = profileInfo.getId().toString().replace("-", "");
++        if (isDemo) {
++            userId = userId.replaceFirst("^0+(?!$)", "");
+         }
+ 
+-        online = true;
+         setUserid(userId);
+         setUserType(UserType.MICROSOFT);
+ 
+@@ -385,7 +418,7 @@ public class MicrosoftUserAuthentication extends HttpUserAuthentication {
+ 
+     @Override
+     public boolean isLoggedIn() {
+-        return StringUtils.isNotBlank(mojToken);
++        return StringUtils.isNotBlank(mojToken) || StringUtils.isNotBlank(getUserID());
+     }
+ 
+     @Override
+@@ -432,6 +465,8 @@ public class MicrosoftUserAuthentication extends HttpUserAuthentication {
+             xuid = null;
+         }
+ 
++        cachedProfileName = (String)var1.get("profileName");
++
+         mojToken = (String)var1.get("mojToken");
+ 
+         try {
+@@ -470,6 +505,10 @@ public class MicrosoftUserAuthentication extends HttpUserAuthentication {
+             map.put("xuid2", xuid.toString());
+         }
+ 
++        if (StringUtils.isNotBlank(cachedProfileName)) {
++            map.put("profileName", cachedProfileName);
++        }
++
+         map.put("mojToken", mojToken);
+         map.put("mojTokenExpire", mojTokenExpire.toString());
+         return map;
+diff --git a/src/main/java/dev/figboot/olauncher/launcher/runtime/JavaRuntimeManager.java b/src/main/java/dev/figboot/olauncher/launcher/runtime/JavaRuntimeManager.java
+index 551c252..ec2e6a1 100644
+--- a/src/main/java/dev/figboot/olauncher/launcher/runtime/JavaRuntimeManager.java
++++ b/src/main/java/dev/figboot/olauncher/launcher/runtime/JavaRuntimeManager.java
+@@ -16,6 +16,7 @@ import dev.figboot.olauncher.util.DeletingFileVisitor;
+ import dev.figboot.olauncher.util.InstantTypeAdapter;
+ import dev.figboot.olauncher.util.runtime.RuntimeFileDeserializer;
+ import lombok.Getter;
++import org.apache.commons.io.FileUtils;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+@@ -51,6 +52,7 @@ public class JavaRuntimeManager {
+ 
+     private final Path runtimesDirectory;
+     private final Path platformDirectory;
++    private final Path cacheDir;
+     private final Gson gson;
+ 
+     private final String jrePlatformName;
+@@ -63,6 +65,7 @@ public class JavaRuntimeManager {
+         this.proxy = proxy;
+ 
+         runtimesDirectory = workDir.toPath().resolve("olruntime");
++        cacheDir = workDir.toPath().resolve("caches");
+         gson = new GsonBuilder()
+                 .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
+                 .registerTypeAdapter(RuntimeFile.class, new RuntimeFileDeserializer())
+@@ -78,7 +81,35 @@ public class JavaRuntimeManager {
+             refreshing = true;
+         }
+ 
+-        manifest = gson.fromJson(Http.performGet(manifestUrl, proxy), new TypeToken<Map<String, Map<String, List<RuntimesManifest.Runtime>>>>(){}.getType());
++        try {
++            String json = Http.performGet(manifestUrl, proxy);
++            manifest = gson.fromJson(json, new TypeToken<Map<String, Map<String, List<RuntimesManifest.Runtime>>>>(){}.getType());
++
++            try {
++                File cacheFile = cacheDir.resolve("runtime_manifest_cache.json").toFile();
++                cacheFile.getParentFile().mkdirs();
++                FileUtils.writeStringToFile(cacheFile, json, "UTF-8");
++            } catch (IOException e) {
++                LOGGER.warn("Failed to cache runtime manifest", e);
++            }
++        } catch (IOException e) {
++            try {
++                File cacheFile = cacheDir.resolve("runtime_manifest_cache.json").toFile();
++                if (cacheFile.exists()) {
++                    String cachedJson = FileUtils.readFileToString(cacheFile, "UTF-8");
++                    manifest = gson.fromJson(cachedJson, new TypeToken<Map<String, Map<String, List<RuntimesManifest.Runtime>>>>(){}.getType());
++                    LOGGER.info("Loaded runtime manifest from cache (offline mode)");
++                } else {
++                    LOGGER.warn("Could not load runtime manifest and no cache available", e);
++                    manifest = new HashMap<>();
++                    manifest.put(jrePlatformName, new HashMap<>());
++                }
++            } catch (IOException cacheError) {
++                LOGGER.error("Failed to load cached runtime manifest", cacheError);
++                manifest = new HashMap<>();
++                manifest.put(jrePlatformName, new HashMap<>());
++            }
++        }
+ 
+         LOGGER.info("Your java runtime platform is '" + jrePlatformName + "'.");
+ 
+@@ -97,6 +128,10 @@ public class JavaRuntimeManager {
+             if (refreshing) return Collections.emptyList();
+         }
+ 
++        if (manifest == null || !manifest.containsKey(jrePlatformName)) {
++            return Collections.emptyList();
++        }
++
+         List<RuntimesManifest.Runtime> runtimes = manifest.get(jrePlatformName).get(component);
+         if (runtimes == null) return Collections.emptyList();
+         return Collections.unmodifiableList(runtimes);
+diff --git a/src/main/java/net/minecraft/launcher/updater/RemoteVersionList.java b/src/main/java/net/minecraft/launcher/updater/RemoteVersionList.java
+index 9d07d80..d54d93c 100644
+--- a/src/main/java/net/minecraft/launcher/updater/RemoteVersionList.java
++++ b/src/main/java/net/minecraft/launcher/updater/RemoteVersionList.java
+@@ -46,10 +46,21 @@ public class RemoteVersionList extends VersionList {
+ 
+     public void refreshVersions() throws IOException {
+         this.clearCache();
++        if (cached == null) {
++            cached = new File(launcher.getLauncher().getWorkingDirectory(), "caches/version_manifest_cache.json");
++        }
+         // olauncher start - cache version manifest allowing for offline use
+         RemoteVersionList.RawVersionList var1;
++        String content;
+         try {
+-            var1 = this.gson.fromJson(this.getContent(this.manifestUrl), RawVersionList.class);
++            content = this.getContent(this.manifestUrl);
++            var1 = this.gson.fromJson(content, RawVersionList.class);
++            // Cache the manifest for offline use
++            try {
++                cached.getParentFile().mkdirs();
++                FileUtils.writeStringToFile(cached, content, StandardCharsets.UTF_8);
++            } catch (IOException e) {
++            }
+         } catch (IOException e){
+             if (cached.exists()){
+                 var1 = this.gson.fromJson(FileUtils.readFileToString(cached, StandardCharsets.UTF_8), RawVersionList.class);
+-- 
+2.53.0.windows.1
+
