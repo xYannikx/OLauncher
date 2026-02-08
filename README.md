@@ -1,8 +1,8 @@
 # OLauncher
-The old launcher we all know and love with the quality-of-life features of the new launcher. This aims to support java 8 through modern java.
+The old launcher we all know and love with the QoL features of the new launcher.
 
 ## Project Status
-This project is maintained on a best-effort basis and updates will only be made when I have the time. The fork was originally created to ensure the launcher could display [new update notes](https://ragedmeteor1837.github.io/mcnews/news/) and similar fixes. There are currently no planned features beyond this scope.
+This project is maintained on a best-effort basis and updates will only be made when I have the time.
 
 ## How to use
 1. Go to the [latest release](https://github.com/RagedMeteor1837/OLauncher/releases/latest)
