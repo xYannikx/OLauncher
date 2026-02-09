@@ -1,4 +1,4 @@
-From 88e1ba8eaa369aa1b3c3c2eda238d408ee518582 Mon Sep 17 00:00:00 2001
+From 39bd1aa1912b8b57f8a15a75491a2f4de1cd3a07 Mon Sep 17 00:00:00 2001
 From: bigfoot547 <bigfoot@figboot.dev>
 Date: Sun, 31 Mar 2024 17:49:36 -0500
 Subject: [PATCH] Auth overhaul
@@ -1036,7 +1036,7 @@ index 31f1846..e5af44f 100644
          if (response == null) {
              this.popup.getErrorForm().displayError(new AuthenticationException("The authentication code is null"), "The authentication request was cancelled.");
 diff --git a/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java b/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java
-index 0c66c11..69b9729 100644
+index 0c66c11..f6de730 100644
 --- a/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java
 +++ b/src/main/java/net/minecraft/launcher/ui/popups/login/LogInPopup.java
 @@ -30,7 +30,8 @@ public class LogInPopup extends JPanel implements ActionListener {
@@ -1045,7 +1045,7 @@ index 0c66c11..69b9729 100644
      private final JButton registerButton = new JButton("Register");
 -    private final JButton microsoftLoginButton = new JButton("Log In with Microsoft"); // olauncher - Add MS login button
 +    private final JButton microsoftLoginButton = new JButton("Microsoft Login"); // olauncher - Add MS login button
-+    private final JButton microsoftDeviceLoginButton = new JButton("Microsoft Login (Device Code)"); // olauncher - Add MS login button
++    private final JButton microsoftDeviceLoginButton = new JButton("Microsoft Login"); // olauncher - Add MS login button
      private final JProgressBar progressBar = new JProgressBar();
  
      public LogInPopup(Launcher var1, LogInPopup.Callback var2) {
@@ -1073,7 +1073,7 @@ index 0c66c11..69b9729 100644
 -        this.add(Box.createVerticalStrut(15));
 +        //this.add(Box.createVerticalStrut(15));
          JPanel var6 = new JPanel();
-+        var6.setLayout(new GridLayout(2, 1, 0, 5));
++        var6.setLayout(new GridLayout(0, 1, 0, 5));
          /*var6.setLayout(new GridLayout(1, 2, 10, 0));
          var6.add(this.registerButton);
          var6.add(this.loginButton);*/
@@ -1093,7 +1093,7 @@ index 0c66c11..69b9729 100644
 +        microsoftLoginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 +        microsoftDeviceLoginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 +
-+        var6.add(microsoftLoginButton);
++        //var6.add(microsoftLoginButton);
 +        var6.add(microsoftDeviceLoginButton);
  
          this.add(var6);
@@ -1120,5 +1120,5 @@ index 0c66c11..69b9729 100644
          } else {
              SwingUtilities.invokeLater(new Runnable() {
 -- 
-2.47.2
+2.53.0.windows.1
 

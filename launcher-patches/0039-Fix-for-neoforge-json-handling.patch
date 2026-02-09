@@ -1,4 +1,4 @@
-From 2f7285be9dafd693f9976303bddfc3a4353fe420 Mon Sep 17 00:00:00 2001
+From b8335040991305e450cf38cdcfbf140cc9e12247 Mon Sep 17 00:00:00 2001
 From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
 Date: Mon, 9 Feb 2026 21:11:59 +0000
 Subject: [PATCH] Fix for neoforge json handling
