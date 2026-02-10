@@ -1,0 +1,46 @@
+From f7546fd6ba022eaed617648f0692c184fb150d7a Mon Sep 17 00:00:00 2001
+From: RagedMeteor1837 <148640131+RagedMeteor1837@users.noreply.github.com>
+Date: Tue, 10 Feb 2026 12:00:51 +0000
+Subject: [PATCH] Fix for null enum values
+
+
+diff --git a/src/main/java/net/minecraft/launcher/updater/CompleteMinecraftVersion.java b/src/main/java/net/minecraft/launcher/updater/CompleteMinecraftVersion.java
+index b5880c0..b66e6a2 100644
+--- a/src/main/java/net/minecraft/launcher/updater/CompleteMinecraftVersion.java
++++ b/src/main/java/net/minecraft/launcher/updater/CompleteMinecraftVersion.java
+@@ -105,7 +105,10 @@ public class CompleteMinecraftVersion implements CompleteVersion {
+ 
+             while(argumentIter.hasNext()) {
+                 Entry<ArgumentType, List<Argument>> var4 = argumentIter.next();
+-                this.arguments.put(var4.getKey(), new ArrayList<>(var4.getValue()));
++                // olauncher - skip null keys (unknown ArgumentType from newer versions)
++                if (var4.getKey() != null) {
++                    this.arguments.put(var4.getKey(), new ArrayList<>(var4.getValue()));
++                }
+             }
+         }
+ 
+@@ -396,13 +399,19 @@ public class CompleteMinecraftVersion implements CompleteVersion {
+ 
+                 Entry<ArgumentType, List<Argument>> var10;
+                 List<Argument> var12; // olauncher - fix type
+-                for(var9 = this.arguments.entrySet().iterator(); var9.hasNext(); var12.addAll(var10.getValue())) {
++                var9 = this.arguments.entrySet().iterator();
++                while(var9.hasNext()) {
+                     var10 = var9.next();
++                    // olauncher - skip null keys (unknown ArgumentType from newer versions)
++                    if (var10.getKey() == null) {
++                        continue;
++                    }
+                     var12 = var5.arguments.get(var10.getKey());
+                     if (var12 == null) {
+                         var12 = new ArrayList<>();
+                         var5.arguments.put(var10.getKey(), var12);
+                     }
++                    var12.addAll(var10.getValue());
+                 }
+             }
+ 
+-- 
+2.50.1 (Apple Git-155)
+
