@@ -1,4 +1,4 @@
-From ac9844353fe7347a44f2c84bd33478ae1154cce9 Mon Sep 17 00:00:00 2001
+From feeefcacf526006ddf3efa6ae8bec6cca5c172e0 Mon Sep 17 00:00:00 2001
 From: bigfoot547 <bigfoot@figboot.dev>
 Date: Thu, 10 Mar 2022 01:37:59 -0600
 Subject: [PATCH] Add maven project
@@ -304,7 +304,7 @@ index 2310227..0000000
 -</xs:schema>
 diff --git a/META-INF/MANIFEST.MF b/META-INF/MANIFEST.MF
 deleted file mode 100644
-index aef7cf0..0000000
+index 6c5d5ec..0000000
 --- a/META-INF/MANIFEST.MF
 +++ /dev/null
 @@ -1,4 +0,0 @@
@@ -314,7 +314,7 @@ index aef7cf0..0000000
 -
 diff --git a/pom.xml b/pom.xml
 new file mode 100644
-index 0000000..11fe0aa
+index 0000000..da26a5a
 --- /dev/null
 +++ b/pom.xml
 @@ -0,0 +1,226 @@
@@ -332,7 +332,7 @@ index 0000000..11fe0aa
 +    </parent>
 +
 +    <artifactId>olauncher</artifactId>
-+    <version>2.2.0</version>
++    <version>2.2.1</version>
 +
 +    <properties>
 +        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -1209,5 +1209,5 @@ similarity index 100%
 rename from yggdrasil_session_pubkey.der
 rename to src/main/resources/yggdrasil_session_pubkey.der
 -- 
-2.50.1 (Apple Git-155)
+2.53.0.windows.1
 
