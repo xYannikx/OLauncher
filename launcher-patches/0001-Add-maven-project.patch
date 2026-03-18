@@ -1,4 +1,4 @@
-From feeefcacf526006ddf3efa6ae8bec6cca5c172e0 Mon Sep 17 00:00:00 2001
+From 938466f42a87e309442667e72f24f68a3a52310b Mon Sep 17 00:00:00 2001
 From: bigfoot547 <bigfoot@figboot.dev>
 Date: Thu, 10 Mar 2022 01:37:59 -0600
 Subject: [PATCH] Add maven project
@@ -314,7 +314,7 @@ index 6c5d5ec..0000000
 -
 diff --git a/pom.xml b/pom.xml
 new file mode 100644
-index 0000000..da26a5a
+index 0000000..13ad9bd
 --- /dev/null
 +++ b/pom.xml
 @@ -0,0 +1,226 @@
@@ -332,7 +332,7 @@ index 0000000..da26a5a
 +    </parent>
 +
 +    <artifactId>olauncher</artifactId>
-+    <version>2.2.1</version>
++    <version>2.2.2</version>
 +
 +    <properties>
 +        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

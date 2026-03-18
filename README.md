@@ -16,7 +16,6 @@ This project is maintained on a best-effort basis and updates will only be made 
   - You just need a runtime to open the actual launcher
   - You can still provide your own JVMs
 - Update checking
-- Displays Mojang Server Status
 - Displays latest release notes
 
 ## Build from source
